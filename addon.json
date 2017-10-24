@@ -1,0 +1,12 @@
+{
+	"title"		:	"Disable Lighting Tool",
+	"type"		:	"tool",
+	"tags"		:	[ "build", "roleplay" ],
+	"description":	"A tool for disabling lighting on specific props.",
+	"ignore"	:
+	[
+		"*.psd",
+		"*.vcproj",
+		"*.svn*"
+	]
+}

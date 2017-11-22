@@ -14,6 +14,7 @@ end
 
 function ENT:Draw()
 	if not IsValid(self) then return end
+	if not IsValid(self:GetParent()) then self:Remove() return end
 	self:SetColor(self:GetParent():GetColor())
 	self:SetMaterial(self:GetParent():GetMaterial())
 	self.RenderGroup = RENDERGROUP_BOTH

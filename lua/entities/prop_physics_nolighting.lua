@@ -13,6 +13,7 @@ function ENT:Initialize()
 end
 
 function ENT:Draw()
+	if not IsValid(self) then return end
 	self:SetColor(self:GetParent():GetColor())
 	self:SetMaterial(self:GetParent():GetMaterial())
 	self.RenderGroup = RENDERGROUP_BOTH

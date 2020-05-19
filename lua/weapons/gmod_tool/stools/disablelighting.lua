@@ -14,28 +14,41 @@ else
 	util.AddNetworkString("EntityLightingChange")
 end
 
-local function DisableEntityLighting(ent, toggle)
+function DisableEntityLighting(ent, toggle)
 	if not IsValid(ent) then return end
-	
-	if toggle then
-		ent.RenderOverride = function(ent)
-			render.SuppressEngineLighting(true)
-			ent:DrawModel()
-			render.SuppressEngineLighting(false)
-		end
+
+	if ent:GetClass() == "prop_effect" and IsValid(ent.AttachedEntity) then
+		ent = ent.AttachedEntity
+	end
 		
-		ent.LightingDisabled = true
+	if SERVER then
+		net.Start("EntityLightingChange")
+			net.WriteBool(toggle)
+			net.WriteEntity(ent)
+		net.Broadcast()
+		
+		ent:SetNWBool("disablelighting", toggle)
+		duplicator.StoreEntityModifier(ent, "DisableEntityLighting", {toggle})
 	else
-		ent.RenderOverride = nil
-		ent.LightingDisabled = false
+		if toggle then
+			ent.RenderOverride = function(ent)
+				render.SuppressEngineLighting(true)
+				ent:DrawModel()
+				render.SuppressEngineLighting(false)
+			end
+		else
+			ent.RenderOverride = nil
+		end
 	end
 end
 
 hook.Add("OnEntityCreated", "lightingcheck", function(ent)
 	local toggle = ent:GetNWBool("disablelighting", false)
 	
-	if CLIENT and toggle then
-		DisableEntityLighting(ent, true)
+	if toggle then
+		timer.Simple(0.05, function()
+			DisableEntityLighting(ent, true)
+		end)
 	end
 end)
 
@@ -53,46 +66,26 @@ end)
 
 local function DupeLighting(ply, ent, data)
 	timer.Simple(0.05, function()
-		net.Start("EntityLightingChange")
-			net.WriteBool(data[1])
-			net.WriteEntity(ent)
-		net.Broadcast()
+		DisableEntityLighting(ent, data[1])
 	end)
-	
-	ent:SetNWBool("disablelighting", true)
 end
 duplicator.RegisterEntityModifier("DisableEntityLighting", DupeLighting)
 
 function TOOL:LeftClick(trace)
 	local entity = trace.Entity
-	if entity:IsWorld() or entity:IsPlayer() then return false end
+	if entity:IsWorld() then return false end
+	if CLIENT then return true end
 	
-	if SERVER then
-		net.Start("EntityLightingChange")
-			net.WriteBool(true)
-			net.WriteEntity(entity)
-		net.Broadcast()
-		
-		entity:SetNWBool("disablelighting", true)
-		duplicator.StoreEntityModifier(entity, "DisableEntityLighting", {true})
-	end
+	DisableEntityLighting(entity, true)
 	return true
 end
 
-
 function TOOL:RightClick(trace)
 	local entity = trace.Entity
-	if entity:IsWorld() or entity:IsPlayer() then return false end
+	if entity:IsWorld() then return false end
+	if CLIENT then return true end
 	
-	if SERVER then
-		net.Start("EntityLightingChange")
-			net.WriteBool(false)
-			net.WriteEntity(entity)
-		net.Broadcast()
-		
-		entity:SetNWBool("disablelighting", false)
-		duplicator.StoreEntityModifier(entity, "DisableEntityLighting", {false})
-	end
+	DisableEntityLighting(entity, false)
 	return true
 end
 

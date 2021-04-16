@@ -32,9 +32,11 @@ function DisableEntityLighting(ent, toggle)
 	else
 		if toggle then
 			ent.RenderOverride = function(ent)
-				render.SetLightingMode(2)
+				render.SuppressEngineLighting(true)
+				render.SetLightingMode(1)
 				ent:DrawModel()
 				render.SetLightingMode(0)
+				render.SuppressEngineLighting(false)
 			end
 		else
 			ent.RenderOverride = nil

@@ -55,6 +55,16 @@ end
 hook.Add("PlayerSpawnedProp", "disablelighting_spawnapply", applyOnSpawn)
 hook.Add("PlayerSpawnedRagdoll", "disablelighting_spawnapply", applyOnSpawn)
 
+hook.Add("InitPostEntity", "disablelighting_disablespawn", function()
+	hook.Remove("InitPostEntity", "disablelighting_disablespawn")
+	if not IsValid(LocalPlayer()) then return end
+	-- default "apply on spawn" to off in case they forgot they turned it on
+	local spawnconvar = GetConVar("disablelighting_spawn")
+	if spawnconvar then
+		spawnconvar:SetBool(false)
+	end
+end)
+
 function DisableEntityLighting(ent, toggleLighting, lightingMode, toggleShadow)
 	toggleLighting = toggleLighting == true and true or false
 	lightingMode = math.Round(math.Clamp(lightingMode or 0, 0, 2))
@@ -196,12 +206,6 @@ function TOOL:Reload(trace)
 end
 
 function TOOL.BuildCPanel(CPanel)
-	-- default "apply on spawn" to off in case they forgot they turned it on
-	local spawnconvar = GetConVar("disablelighting_spawn")
-	if spawnconvar then
-		spawnconvar:SetInt(0)
-	end
-
 	CPanel:AddControl("Header", { Text = "#Tool.disablelighting.name", Description = "#Tool.disablelighting.desc" })
 	CPanel:CheckBox("Disable entity lighting", "disablelighting_lighting")
 	CPanel:CheckBox("Disable entity shadows", "disablelighting_shadow")

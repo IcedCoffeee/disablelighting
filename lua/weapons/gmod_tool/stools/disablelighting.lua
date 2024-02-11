@@ -20,6 +20,14 @@ if CLIENT then
 	language.Add("Tool.disablelighting.reload", "Enable Lighting")
 	language.Add("disablelighting_name", "Name:")
 	TOOL.Information = {"left", "right", "reload"}
+
+	-- default "apply on spawn" to off in case they forgot they turned it on
+	hook.Add("InitPostEntity", "disablelighting_disablespawn", function()
+		local spawnconvar = GetConVar("disablelighting_spawn")
+		if spawnconvar then
+			spawnconvar:SetBool(false)
+		end
+	end)
 end
 
 if SERVER then
@@ -54,16 +62,6 @@ local function applyOnSpawn(ply, model, ent)
 end
 hook.Add("PlayerSpawnedProp", "disablelighting_spawnapply", applyOnSpawn)
 hook.Add("PlayerSpawnedRagdoll", "disablelighting_spawnapply", applyOnSpawn)
-
-hook.Add("InitPostEntity", "disablelighting_disablespawn", function()
-	hook.Remove("InitPostEntity", "disablelighting_disablespawn")
-	if not IsValid(LocalPlayer()) then return end
-	-- default "apply on spawn" to off in case they forgot they turned it on
-	local spawnconvar = GetConVar("disablelighting_spawn")
-	if spawnconvar then
-		spawnconvar:SetBool(false)
-	end
-end)
 
 function DisableEntityLighting(ent, toggleLighting, lightingMode, toggleShadow)
 	toggleLighting = toggleLighting == true and true or false

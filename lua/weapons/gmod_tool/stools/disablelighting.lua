@@ -34,8 +34,20 @@ if SERVER then
 	util.AddNetworkString("EntityLightingChange")
 end
 
+local maploadbypass = false
+
+hook.Add("PostCleanupMap", "disablelighting_saveloadbypass", function()
+	maploadbypass = true
+	
+	-- 0.2 because duplicator internally uses 0.1 second delay before spawning the entities after cleanup
+	timer.Simple(0.2, function()
+		maploadbypass = false
+	end)
+end)
+
 local function applyOnSpawn(ply, model, ent)
 	if ply:GetInfoNum("disablelighting_spawn", 0) != 1 then return end
+	if maploadbypass then return end
 	
 	local r = ply:GetInfoNum("disablelighting_r", 255)
 	local g = ply:GetInfoNum("disablelighting_g", 255)
